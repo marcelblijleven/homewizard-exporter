@@ -67,6 +67,7 @@ func (c *Client) Capabilities() Capabilities {
 	return c.caps
 }
 
+// Disable disables a capability on thr client
 func (c *Client) Disable(endpoint string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
