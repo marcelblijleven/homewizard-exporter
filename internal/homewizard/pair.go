@@ -13,6 +13,7 @@ import (
 	"github.com/marcelblijleven/homewizard_exporter/internal/config"
 )
 
+// DefaultUserName used when pairing
 const DefaultUserName = "local/homewizard_exporter"
 
 var userNamePattern = regexp.MustCompile(`^local/[a-zA-Z0-9\-_/\\# ]{1,40}$`)

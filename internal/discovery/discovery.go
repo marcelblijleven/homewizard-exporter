@@ -13,7 +13,9 @@ import (
 )
 
 const (
+	// ServiceV1 tcp id
 	ServiceV1 = "_hwenergy._tcp"
+	// ServiceV2 tcp id
 	ServiceV2 = "_homewizard._tcp"
 )
 
