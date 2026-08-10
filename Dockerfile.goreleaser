@@ -1,0 +1,26 @@
+# syntax=docker/dockerfile:1
+
+# Used by GoReleaser (dockers_v2)
+
+FROM --platform=$BUILDPLATFORM busybox:latest AS tokens
+RUN install -d -o 65532 -g 65532 /tokens
+
+FROM gcr.io/distroless/static-debian12:nonroot
+
+LABEL org.opencontainers.image.source=https://github.com/marcelblijleven/homewizard_exporter
+LABEL org.opencontainers.image.description="Prometheus exporter for HomeWizard Energy devices"
+LABEL org.opencontainers.image.licenses=MIT
+
+# GoReleaser stages binaries as <os>/<arch>/homewizard_exporter, for example
+# linux/amd64/homewizard_exporter.
+ARG TARGETPLATFORM
+COPY ${TARGETPLATFORM}/homewizard_exporter /usr/local/bin/homewizard_exporter
+
+# v2 API tokens live here; mount a volume to keep them across restarts.
+COPY --from=tokens --chown=65532:65532 /tokens /var/lib/homewizard_exporter
+VOLUME /var/lib/homewizard_exporter
+
+USER nonroot:nonroot
+EXPOSE 9833
+
+ENTRYPOINT ["/usr/local/bin/homewizard_exporter"]

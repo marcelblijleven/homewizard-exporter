@@ -1,0 +1,85 @@
+# homewizard_exporter configuration
+#
+# Every value below is the built-in default unless noted. The only thing you
+# have to supply is a list of devices, and the only thing a device needs is a
+# host -- the product type, the API version and the available endpoints are all
+# read from the device itself at startup.
+#
+# Tokens can be supplied via environment variables instead of this file. See the
+# comments marked HOMEWIZARD_*.
+
+devices:
+  # A P1 Meter reached over the v2 API. Get the token with:
+  #   homewizard_exporter pair 192.168.1.10 -o /var/lib/homewizard_exporter/p1.token
+  - name: p1
+    host: 192.168.1.10
+
+    # Everything below is optional.
+
+    # auto - probe the device and use whichever API it offers (recommended)
+    # v1   - HTTP, no token, must be enabled in the HomeWizard app
+    # v2   - HTTPS with a bearer token, always available on supported firmware
+    api_version: auto
+
+    # The v2 API needs a bearer token. Prefer token_file or the environment
+    # variable over writing the token here: it grants full access to the
+    # device's data.
+    #
+    # HOMEWIZARD_TOKEN_P1 (the device name, upper-cased, non-alphanumerics
+    # replaced with underscores) overrides both.
+    token: ""
+    token_file: /var/lib/homewizard_exporter/p1.token
+
+    # Override poll.interval for this device alone.
+    # interval: 5s
+
+    tls:
+      # verify   - check the certificate against HomeWizard's CA and confirm
+      #            the name it carries (appliance/<type>/<serial>)
+      # insecure - accept any certificate
+      mode: verify
+      # Replace the built-in HomeWizard CA, for a device presenting a
+      # certificate from somewhere else.
+      # ca_file: /etc/homewizard_exporter/ca.pem
+
+  # A kWh Meter on the v1 API. No token, but Local API has to be switched on in
+  # the HomeWizard app under Settings > Meters > your meter.
+  - name: solar
+    host: 192.168.1.11
+
+  # An Energy Socket. Its relay state is exported as well as its metering.
+  - name: socket
+    host: 192.168.1.12
+
+poll:
+  # Scrapes read a cached snapshot, so these intervals are the only load your
+  # devices ever see -- Prometheus can scrape as often as it likes.
+  #
+  # The HomeWizard documentation asks for no more than one request every 500ms,
+  # which is the floor this accepts. A P1 Meter on a DSMR 5.0 smart meter has
+  # new data every second; anything older updates every ten.
+  interval: 10s
+
+  # Uptime, Wi-Fi, cloud state and the battery group do not change between one
+  # reading and the next, so they are read far less often.
+  system_interval: 60s
+
+  timeout: 5s
+
+  # Readings older than this mark homewizard_up as 0 for that device.
+  stale_after: 60s
+
+server:
+  listen: ":9833"
+  metrics_path: /metrics
+  read_timeout: 5s
+
+dashboard:
+  # Also enabled by HOMEWIZARD_DASHBOARD=true
+  enabled: false
+  path: /
+  refresh: 10s
+
+log:
+  level: info # debug | info | warn | error
+  format: text # text | json

@@ -1,0 +1,9 @@
+.git
+.github
+dist/
+homewizard_exporter
+coverage.out
+config.yaml
+*.token
+README.md
+contrib/

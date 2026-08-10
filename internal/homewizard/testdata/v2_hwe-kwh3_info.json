@@ -1,0 +1,7 @@
+{
+  "product_name": "kWh Meter 3-phase",
+  "product_type": "HWE-KWH3",
+  "serial": "aabbccddeeff",
+  "firmware_version": "4.19",
+  "api_version": "2.3.0"
+}

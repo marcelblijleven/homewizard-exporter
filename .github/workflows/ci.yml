@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Verify the example config still loads
+        run: go run ./cmd/homewizard_exporter -config config.example.yaml -check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # A Raspberry Pi is the likely host, so make sure those targets build.
+      - name: Cross-compile
+        run: |
+          for target in linux/amd64 linux/arm64 linux/arm darwin/arm64; do
+            GOOS=${target%/*} GOARCH=${target#*/} CGO_ENABLED=0 \
+              go build -o /dev/null ./cmd/homewizard_exporter
+            echo "ok $target"
+          done
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          platforms: linux/amd64
+
+  # Dockerfile.goreleaser is used only by `goreleaser release`, so without this
+  # job a mistake in it stays invisible until a tag is pushed and the release
+  # has already half happened. Staging a binary by hand is enough to exercise
+  # it: that is all GoReleaser does before calling docker build.
+  docker-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Stage a binary the way GoReleaser lays it out
+        run: |
+          mkdir -p ctx/linux/amd64
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 \
+            go build -o ctx/linux/amd64/homewizard_exporter ./cmd/homewizard_exporter
+          cp Dockerfile.goreleaser ctx/
+
+      - name: Build the release image
+        uses: docker/build-push-action@v7
+        with:
+          context: ctx
+          file: ctx/Dockerfile.goreleaser
+          push: false
+          platforms: linux/amd64

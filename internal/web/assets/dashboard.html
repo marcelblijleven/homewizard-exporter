@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>homewizard_exporter</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#9889;</text></svg>">
+<link rel="stylesheet" href="{{ .Prefix }}assets/style.css">
+</head>
+<body>
+<header>
+  <h1>homewizard_exporter</h1>
+  <div class="status" id="status" data-state="unknown">
+    <span class="dot"></span><span id="status-text">connecting</span>
+  </div>
+</header>
+
+<section class="totals" id="totals">
+  <div class="stat">
+    <span class="value" id="total-watts">&hellip;</span>
+    <span class="label" id="total-watts-label">grid</span>
+  </div>
+  <div class="stat" id="total-water-stat" hidden>
+    <span class="value" id="total-water">&hellip;</span>
+    <span class="label">water</span>
+  </div>
+  <div class="stat">
+    <span class="value" id="total-devices">&hellip;</span>
+    <span class="label">devices online</span>
+  </div>
+</section>
+
+<main id="devices"></main>
+
+<p class="empty" id="empty" hidden>No devices yet.</p>
+
+<footer>
+  <span id="updated"></span>
+  <a href="{{ .MetricsPath }}">metrics</a>
+</footer>
+
+<script>window.HOMEWIZARD_REFRESH = {{ .RefreshSeconds }};</script>
+<script src="{{ .Prefix }}assets/app.js"></script>
+</body>
+</html>

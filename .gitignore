@@ -1,0 +1,4 @@
+/homewizard_exporter
+/dist/
+/config.yaml
+*.token

@@ -1,0 +1,43 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - misspell
+    - revive
+    - unconvert
+    - whitespace
+
+  settings:
+    revive:
+      rules:
+        - name: exported
+          disabled: false
+
+    errcheck:
+      check-type-assertions: true
+      # Writes to stdout/stderr and to an http.ResponseWriter have nowhere to
+      # report a failure, and a deferred Close on a drained response body is
+      # the standard idiom. Checking these adds noise, not safety.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - io.Copy
+        - (io.Closer).Close
+        - (net/http.ResponseWriter).Write
+
+  exclusions:
+    rules:
+      # Fixture-driven tests assert against real device responses; long literal
+      # tables are the point.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - revive
+
+formatters:
+  enable:
+    - gofmt

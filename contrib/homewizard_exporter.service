@@ -1,0 +1,56 @@
+# systemd unit for homewizard_exporter.
+#
+#   sudo install -m0644 contrib/homewizard_exporter.service /etc/systemd/system/
+#   sudo systemctl enable --now homewizard_exporter
+#
+# v2 API tokens belong in /var/lib/homewizard_exporter (created below) or in the
+# EnvironmentFile, not in the config file or here: unit files are world-readable.
+
+[Unit]
+Description=Prometheus exporter for HomeWizard Energy devices
+Documentation=https://github.com/marcelblijleven/homewizard_exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/homewizard_exporter -config /etc/homewizard_exporter/config.yaml
+Restart=on-failure
+RestartSec=10s
+
+# HOMEWIZARD_TOKEN_P1=...
+EnvironmentFile=-/etc/homewizard_exporter/homewizard_exporter.env
+
+# Runs as a transient unprivileged user; /var/lib/homewizard_exporter is created
+# and owned automatically and is where `pair` writes device tokens.
+DynamicUser=yes
+StateDirectory=homewizard_exporter
+
+# The exporter reads a handful of hosts on the LAN and writes nothing. Nothing
+# else is needed, so nothing else is permitted.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target

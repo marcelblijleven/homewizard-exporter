@@ -1,0 +1,142 @@
+:root {
+  color-scheme: light dark;
+  --bg: #fbfbfa;
+  --fg: #1c1b1a;
+  --muted: #6b6764;
+  --line: #e3e0dc;
+  --card: #ffffff;
+  --ok: #3d8a4f;
+  --warn: #c07a1e;
+  --bad: #b4453c;
+  --idle: #eceae6;
+  /* Importing from the grid and exporting to it are the two states worth
+     telling apart at a glance, so they get their own colours. */
+  --import: #b4453c;
+  --export: #3d8a4f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17161a;
+    --fg: #eceae6;
+    --muted: #97918c;
+    --line: #2e2c31;
+    --card: #201f24;
+    --ok: #6cc283;
+    --warn: #e0a447;
+    --bad: #e0736a;
+    --idle: #2a282e;
+    --import: #e0736a;
+    --export: #6cc283;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem) 3rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem;
+}
+
+h1 { margin: 0; font-size: 1.25rem; letter-spacing: -0.01em; }
+
+.status { display: flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; color: var(--muted); }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.status[data-state="ok"] .dot { background: var(--ok); }
+.status[data-state="stale"] .dot { background: var(--warn); }
+.status[data-state="down"] .dot { background: var(--bad); }
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1.5rem, 5vw, 3.5rem);
+  padding: 1.25rem 0;
+}
+
+.stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.stat .value {
+  font-size: 1.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.stat .label { font-size: 0.75rem; color: var(--muted); text-transform: lowercase; }
+.stat .value.importing { color: var(--import); }
+.stat .value.exporting { color: var(--export); }
+
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 0.5rem;
+}
+
+.device {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  padding: 0.85rem 1rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* A device that is not reporting keeps its card -- knowing a meter has gone
+   quiet matters more than tidying it away -- but stops looking authoritative. */
+.device.offline { border-style: dashed; opacity: 0.7; }
+
+.device-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.device-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.device-api { font-size: 0.68rem; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 0.3rem; }
+.device-product { font-size: 0.75rem; color: var(--muted); }
+
+.reading { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.reading.importing { color: var(--import); }
+.reading.exporting { color: var(--export); }
+.reading-note { font-size: 0.72rem; color: var(--muted); }
+
+.rows { display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.15rem; }
+.row { display: flex; justify-content: space-between; gap: 0.75rem; font-size: 0.78rem; }
+.row .k { color: var(--muted); }
+.row .v { font-variant-numeric: tabular-nums; }
+
+.device-foot {
+  margin-top: auto;
+  padding-top: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pill { font-size: 0.7rem; border-radius: 999px; padding: 0.05rem 0.45rem; border: 1px solid var(--line); }
+.pill.on { color: var(--ok); border-color: currentColor; }
+.pill.off { color: var(--muted); }
+
+footer {
+  margin-top: 2.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+footer a { color: inherit; }
+
+.empty { color: var(--muted); font-size: 0.88rem; padding: 1.5rem 0; }

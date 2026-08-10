@@ -1,0 +1,71 @@
+version: 2
+
+project_name: homewizard_exporter
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: homewizard_exporter
+    main: ./cmd/homewizard_exporter
+    binary: homewizard_exporter
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/marcelblijleven/homewizard_exporter/internal/buildinfo.Version={{.Version}}
+      - -X github.com/marcelblijleven/homewizard_exporter/internal/buildinfo.Commit={{.ShortCommit}}
+      - -X github.com/marcelblijleven/homewizard_exporter/internal/buildinfo.Date={{.Date}}
+    goos: [linux, darwin]
+    goarch: [amd64, arm64, arm]
+    goarm: ["7"]
+    ignore:
+      - goos: darwin
+        goarch: arm
+
+archives:
+  - formats: [tar.gz]
+    files:
+      - README.md
+      - LICENSE
+      - config.example.yaml
+      - contrib/homewizard_exporter.service
+
+checksum:
+  name_template: checksums.txt
+
+# The binaries from `builds` are staged per platform and copied straight in, so
+# the image is built once per architecture without recompiling. Building from
+# ./Dockerfile here cannot work: GoReleaser's build context holds the artifacts
+# and nothing else, so its `COPY go.mod go.sum` finds no source to compile.
+dockers_v2:
+  - id: homewizard_exporter
+    ids: [homewizard_exporter]
+    dockerfile: Dockerfile.goreleaser
+    images:
+      - ghcr.io/marcelblijleven/homewizard_exporter
+    tags:
+      - "{{ .Version }}"
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  footer: |
+    ## Container images
+
+    ```
+    docker pull ghcr.io/marcelblijleven/homewizard_exporter:{{ .Version }}
+    ```
