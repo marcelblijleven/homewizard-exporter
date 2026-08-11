@@ -1,0 +1,19 @@
+services:
+  homewizard_exporter:
+    image: ghcr.io/marcelblijleven/homewizard_exporter:latest
+    container_name: homewizard_exporter
+    restart: unless-stopped
+    command: ["-config", "/etc/homewizard_exporter/config.yaml"] # You can omit this if using env vars only
+    ports:
+      - "9833:9833"
+    volumes:
+      # Your device list. Copy config.example.yaml to config.yaml first, then
+      # edit devices: (use IP addresses because mDNS .local names do not resolve
+      # inside a container). This is optional, you can use env vars instead
+      - ./config.yaml:/etc/homewizard_exporter/config.yaml:ro
+      # v2 API tokens. Written here by the `pair` command and read at startup, so they
+      # survive restarts.
+      - homewizard-tokens:/var/lib/homewizard_exporter
+
+volumes:
+  homewizard-tokens:
